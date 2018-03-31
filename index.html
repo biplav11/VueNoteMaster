@@ -6,13 +6,66 @@
     <title>Note master</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" media="screen" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="./css/style.css">
     <script src="http://unpkg.com/vue"></script>
 </head>
 <body>
     
     <div id="app">
         <div class="container">
-            {{title}}
+            <h1 class="text-center">{{title}}</h1>
+            <div class="row">
+                <div class="col-lg-2"></div>
+                <div class="col-lg-8">
+                    <form @submit.prevent = "handleSubmit" id="handleForm">
+                        <div class="form-group">
+                            <label>Note Title</label>
+                            <input type="text" class="form-control" v-model="note.title">
+                        </div>
+                        <div class="form-group">
+                            <label>Note Text</label>
+                            <textarea class="form-control"  v-model="note.text"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Priority &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</label>
+                            <div class="custom-control custom-radio custom-control-inline">
+                                <input type="radio" id="customRadioInline1" class="custom-control-input" v-model="note.priority" value="Very Important">
+                                <label class="custom-control-label" for="customRadioInline1">Very Important</label>
+                            </div>
+                            <div class="custom-control custom-radio custom-control-inline">
+                                <input type="radio" id="customRadioInline2" class="custom-control-input" v-model="note.priority" value="Important">
+                                <label class="custom-control-label" for="customRadioInline2">Important</label>
+                            </div>
+                            <div class="custom-control custom-radio custom-control-inline">
+                                <input type="radio" id="customRadioInline3" class="custom-control-input" v-model="note.priority" value="Urgent">
+                                <label class="custom-control-label" for="customRadioInline3">Urgent</label>
+                            </div>
+                            <div class="custom-control custom-radio custom-control-inline">
+                                <input type="radio" id="customRadioInline4" class="custom-control-input" v-model="note.priority" value="Not Important" checked="checked">
+                                <label class="custom-control-label" for="customRadioInline4">Not Important</label>
+                            </div>
+                            <div class="form-group">
+                                <label>Position</label>
+                                <input type="text" class="form-control" v-model="note.position">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+            <br/>
+            <div class="row">
+                <div class="col-lg-4" v-for="(note, index) in sortNote">
+                    <div class="card text-white" v-bind:class="note.priority" >
+                        <div class="card-body">
+                            <h5 class="card-title">{{note.title}}</h5>
+                            <p class="card-subtitle mb-2 text-muted">{{note.date}} || {{note.position}}</p>
+                            <p class="card-text">{{note.text}}</p>
+                            <button class="position-absolute text-white" @click="removeNote(index)" style="top:10px; right: 10px; border: 0; font-size: 24px; cursor: pointer; background: transparent;">&times;</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -20,8 +73,57 @@
         let vm = new Vue({
             el: "#app",
             data: {
-                title: "Hello World"
-            }
+                title: "Notemaster",
+                note: {
+                    title: '',
+                    text:'',
+                    priority: '',
+                    position: ''
+                },
+                notes: JSON.parse(localStorage.allNotes)
+            },
+            computed:{
+                sortNote(){
+                    return this.notes.sort(function(a,b){
+                        return a.position - b.position
+                    })
+                    // return "Note Master"
+                },
+            },
+            methods: {
+                handleSubmit(event){
+                    let {title, text, priority, position} = this.note;
+                    switch(priority){
+                        case 'Very Important':
+                            priority = 'bg-danger';
+                            console.log(priority);
+                            break;
+                        case 'Urgent':
+                            priority = 'bg-primary';
+                            break;
+                        case 'Important':
+                            priority = 'bg-dark';
+                            break;
+                        case 'Not Important':
+                            priority = 'bg-success';
+                            break;
+                    }
+                    // console.log(this.note);
+                    console.log(this.notes)
+                    this.notes.push({
+                        title,
+                        text,
+                        priority,
+                        position,
+                        date: new Date(Date.now()).toLocaleString(),
+                    })
+                    localStorage.allNotes = JSON.stringify(this.notes);
+                },
+                removeNote(index){
+                    this.notes.splice(index, 1);
+                    localStorage.allNotes = JSON.stringify(this.notes);                    
+                }
+            },
         })
     </script>
 </body>
